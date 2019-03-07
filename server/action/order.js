@@ -49,6 +49,49 @@ router.get('/getOrderList', (req,res)=>{
     });
 
 })
+//医师取订单列表
+router.get('/getOrderListforDoctor', (req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    // console.log("req.params: ",req.params)
+    // console.log("req.query: ",req.query)
+    let status = req.query.status || 0,
+        doctorID = req.headers.tokenid,
+        rows = req.query.rows || 10,
+        page = req.query.page || 1
+
+    // if(!status){
+    //     res.json(Object.assign(respond, {
+    //         messages: '请传入status变量值'
+    //     }))
+    //     return
+    // }
+    if(!doctorID){
+        res.json(Object.assign(respond, {
+            messages: '缺少 doctorID 值'
+        }))
+        return
+    }
+
+    conn.query(`SELECT * from orderview where doctorID = ${doctorID} AND status = ${status} AND deleted = 0 limit ${(page - 1) * rows} , ${page * rows}`, function (error, results, fields) {
+        if (!error){
+            for(let i of results){
+                i.doctor_avatar = server_address + i.doctor_avatar
+                i.student_avatar = server_address + i.student_avatar
+            }
+            res.json(Object.assign(respond, {
+                success: true,
+                data: results,
+                messages: '取订单列表成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: error,
+                messages: '取订单列表失败',
+            }))
+        }
+    });
+
+})
 
 //取消订单
 router.post('/cancelOrder',(req,res)=>{
@@ -217,11 +260,12 @@ router.post('/submitOrder', (req,res)=>{
     
     //遍历传入的请求对象
     for(let i in data){
+        console.log(i)
         if(keys.indexOf(i) > -1){
             sqlK.push(i)
             sqlV.push('?')
             sqlValue.push(data[i])
-        }else{
+        }else if(i !== 'tokenid'){
             errorKeys.push(i)
         }
     }

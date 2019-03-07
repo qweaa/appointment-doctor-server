@@ -90,4 +90,47 @@ router.post('/register',(req,res)=>{
 
 })
 
+//医师登陆
+router.post('/doctorLogin', (req, res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    const data = req.query
+
+    if(data.NickName || data.doctorID){
+        conn.query(`SELECT * from doctor where NickName = "${data.NickName}"`, function (error, results, fields) {
+            if (!error){
+                if(results.length === 0){
+                    res.json(Object.assign(respond, {
+                        data: {results, fields},
+                        messages: '账户不存在',
+                    }))
+                }else{
+                    if(data.password === results[0].password){
+                        res.json(Object.assign(respond, {
+                            success: true,
+                            data: {
+                                token: results[0].doctorID
+                            },
+                            messages: '医师登陆成功',
+                        }))
+                    }else{
+                        res.json(Object.assign(respond, {
+                            messages: '密码错误',
+                        }))
+                    }
+                }
+            }else{
+                res.json(Object.assign(respond, {
+                    data: error,
+                    messages: '取医师信息详情失败',
+                }))
+            }
+        });
+    }else{
+        res.json(Object.assign(respond, {
+            data: {data},
+            messages: '请求参数不能为空',
+        }))
+    }
+})
+
 module.exports = router
