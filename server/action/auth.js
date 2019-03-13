@@ -3,7 +3,7 @@ const router = express.Router()
 const conn = require('../model')
 const resp = require('../config').respond
 
-//登陆
+//登录
 router.post('/login', (req,res)=>{
     const respond = JSON.parse(JSON.stringify(resp))
     const data = req.query
@@ -16,14 +16,20 @@ router.post('/login', (req,res)=>{
                         messages: '账户不存在',
                     }))
                 }else{
-                    if(data.password === results[0].password){
-                        res.json(Object.assign(respond, {
-                            success: true,
-                            messages: '学生登陆成功',
-                        }))
+                    if(results[0].status == 1){
+                        if(data.password === results[0].password){
+                            res.json(Object.assign(respond, {
+                                success: true,
+                                messages: '学生登录成功',
+                            }))
+                        }else{
+                            res.json(Object.assign(respond, {
+                                messages: '密码错误',
+                            }))
+                        }
                     }else{
                         res.json(Object.assign(respond, {
-                            messages: '密码错误',
+                            messages: '账号已被禁用',
                         }))
                     }
                 }
@@ -90,7 +96,7 @@ router.post('/register',(req,res)=>{
 
 })
 
-//医师登陆
+//医师登录
 router.post('/doctorLogin', (req, res)=>{
     const respond = JSON.parse(JSON.stringify(resp))
     const data = req.query
@@ -104,17 +110,23 @@ router.post('/doctorLogin', (req, res)=>{
                         messages: '账户不存在',
                     }))
                 }else{
-                    if(data.password === results[0].password){
-                        res.json(Object.assign(respond, {
-                            success: true,
-                            data: {
-                                token: results[0].doctorID
-                            },
-                            messages: '医师登陆成功',
-                        }))
+                    if(results[0].status == 1){
+                        if(data.password === results[0].password){
+                            res.json(Object.assign(respond, {
+                                success: true,
+                                data: {
+                                    token: results[0].doctorID
+                                },
+                                messages: '医师登录成功',
+                            }))
+                        }else{
+                            res.json(Object.assign(respond, {
+                                messages: '密码错误',
+                            }))
+                        }
                     }else{
                         res.json(Object.assign(respond, {
-                            messages: '密码错误',
+                            messages: '账号已被禁用',
                         }))
                     }
                 }
@@ -122,6 +134,54 @@ router.post('/doctorLogin', (req, res)=>{
                 res.json(Object.assign(respond, {
                     data: error,
                     messages: '取医师信息详情失败',
+                }))
+            }
+        });
+    }else{
+        res.json(Object.assign(respond, {
+            data: {data},
+            messages: '请求参数不能为空',
+        }))
+    }
+})
+//管理员登录
+router.post('/adminLogin', (req, res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    const data = req.query
+
+    if(data.NickName){
+        conn.query(`SELECT * from admin where NickName = "${data.NickName}"`, function (error, results, fields) {
+            if (!error){
+                if(results.length === 0){
+                    res.json(Object.assign(respond, {
+                        data: results,
+                        messages: '账户不存在',
+                    }))
+                }else{
+                    if(results[0].status == 1){
+                        if(data.Password === results[0].password){
+                            res.json(Object.assign(respond, {
+                                success: true,
+                                data: {
+                                    token: results[0].ID
+                                },
+                                messages: '管理员登录成功',
+                            }))
+                        }else{
+                            res.json(Object.assign(respond, {
+                                messages: '密码错误',
+                            }))
+                        }
+                    }else{
+                        res.json(Object.assign(respond, {
+                            messages: '账号已被禁用',
+                        }))
+                    }
+                }
+            }else{
+                res.json(Object.assign(respond, {
+                    data: error,
+                    messages: '取管理员信息详情失败',
                 }))
             }
         });

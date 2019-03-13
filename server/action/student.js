@@ -59,6 +59,45 @@ router.get('/getStudentList',(req,res)=>{
     });
 })
 
+//跟新状态
+router.post('/updateStudentStatus',(req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    // const data = req.query
+    const data = req.query
+
+    if(!data.studentID){
+        res.json(Object.assign(respond, {
+            messages: '学生ID不能为空',
+        }))
+        return
+    }
+    if(!data.status){
+        res.json(Object.assign(respond, {
+            messages: '状态值不能为空',
+        }))
+        return
+    }
+
+
+    const modSql = 'UPDATE student SET status = ' + data.status + ' WHERE studentID = ' + data.studentID
+
+    //改
+    conn.query(modSql,function (err, result) {
+        if(!err){
+            res.json(Object.assign(respond, {
+                success: true,
+                data: result,
+                messages: '操作成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: err,
+                messages: '操作失败',
+            }))
+        }
+    });
+})
+
 router.post('/updateStudentModule',(req,res)=>{
     const respond = JSON.parse(JSON.stringify(resp))
     // const data = req.query

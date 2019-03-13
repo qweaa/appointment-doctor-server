@@ -115,5 +115,245 @@ router.get('/getSearch', (req,res)=>{
     });
 })
 
+//跟新状态
+router.post('/updateDoctorStatus',(req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    // const data = req.query
+    const data = req.query
+
+    if(!data.doctorID){
+        res.json(Object.assign(respond, {
+            messages: '医师ID不能为空',
+        }))
+        return
+    }
+    if(!data.status){
+        res.json(Object.assign(respond, {
+            messages: '状态值不能为空',
+        }))
+        return
+    }
+
+
+    const modSql = 'UPDATE doctor SET status = ' + data.status + ' WHERE doctorID = ' + data.doctorID
+
+    //改
+    conn.query(modSql,function (err, result) {
+        if(!err){
+            res.json(Object.assign(respond, {
+                success: true,
+                data: result,
+                messages: '操作成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: err,
+                messages: '操作失败',
+            }))
+        }
+    });
+})
+
+//添加医师
+router.post('/addDoctor',(req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    if(req.query.tokenid) delete req.query.tokenid
+    
+    // const data = req.params
+    const data = Object.assign({
+        doctorID: '',
+        password: '',
+        NickName: '',
+        realName: '',
+        age: '',
+        gender: 1,
+        recommend: 0,
+        province: '',
+        city: '',
+        country: '',
+        info: '',
+        status: 1,
+    },req.query)
+
+    if(!data.password || !data.NickName || !data.realName || !data.doctorID){
+        res.json(Object.assign(respond, {
+            data: data,
+            messages: '参数不能为空',
+        }))
+        return
+    }
+
+    let key = Object.keys(data)
+    let value = []
+    let values = []
+    for(let i of key){
+        value.push('?')
+        values.push(data[i])
+    }
+
+    conn.query(`SELECT * from doctor where doctorID = '${data.doctorID}' OR NickName = '${data.NickName}'`, function (error, results, fields) {
+        if (!error){
+            if(results.length === 0){
+                const  addSql = 'INSERT INTO doctor( '+key.join(',')+' ) VALUES( '+value.join(',')+' )';
+                const  addSqlParams = values;
+                //增
+                conn.query(addSql,addSqlParams,function (err, result) {
+                    if(!err){
+                        res.json(Object.assign(respond, {
+                            success: true,
+                            data: result,
+                            messages: '添加成功',
+                        }))
+                    }else{
+                        res.json(Object.assign(respond, {
+                            data: err,
+                            messages: '添加失败 ',
+                        }))
+                    }
+                });
+            }else{
+                res.json(Object.assign(respond, {
+                    data: results,
+                    messages: '工号或昵称已存在',
+                }))
+            }
+        }else{
+            res.json(Object.assign(respond, {
+                data: error,
+                messages: '取学生信息详情失败',
+            }))
+        }
+    });
+
+})
+
+
+//修改密码
+router.post('/changePassword',(req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    // const data = req.query
+    const data = req.query
+
+    if(!data.doctorID && data.tokenid) data.doctorID = data.tokenid 
+
+    if(!data.doctorID){
+        res.json(Object.assign(respond, {
+            messages: '医师ID不能为空',
+        }))
+        return
+    }
+    if(!data.password){
+        res.json(Object.assign(respond, {
+            messages: '密码不能为空',
+        }))
+        return
+    }
+
+
+    // const modSql = 'UPDATE doctor SET password = ' + data.password + ' WHERE doctorID = ' + data.doctorID
+    const modSql = 'UPDATE doctor SET password = ? WHERE doctorID = ?'
+    const modSqlValue = [data.password, data.doctorID]
+
+    //改
+    conn.query(modSql,modSqlValue,function (err, result) {
+        if(!err){
+            res.json(Object.assign(respond, {
+                success: true,
+                data: result,
+                messages: '修改成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: err,
+                messages: '修改失败',
+            }))
+        }
+    });
+})
+
+
+//更新医师
+router.post('/updateDoctor',(req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+
+    if(!req.query.id){
+        res.json(Object.assign(respond, {
+            data: req.query,
+            messages: '请传入id',
+        }))
+        return
+    }
+
+    const id = Number(req.query.id)
+    delete req.query.id
+    if(req.query.tokenid) delete req.query.tokenid
+    
+    // const data = req.params
+    const data = Object.assign({
+        doctorID: '',
+        NickName: '',
+        realName: '',
+        age: '',
+        gender: 1,
+        recommend: 0,
+        province: '',
+        city: '',
+        country: '',
+        info: '',
+        status: 1,
+    },req.query)
+
+    if(!data.NickName || !data.realName || !data.doctorID){
+        res.json(Object.assign(respond, {
+            data: data,
+            messages: '参数不能为空',
+        }))
+        return
+    }
+
+    let key = Object.keys(data)
+    let value = []
+    let values = []
+    for(let i of key){
+        value.push(i + ' = ?')
+        values.push(data[i])
+    }
+
+    conn.query(`SELECT * from doctor where id = '${id}'`, function (error, results, fields) {
+        if (!error){
+            if(results.length){
+                const  addSql = `UPDATE doctor SET ${value.join(',')} WHERE id = '${id}'`;
+                const  addSqlParams = values;
+                //增
+                conn.query(addSql,addSqlParams,function (err, result) {
+                    if(!err){
+                        res.json(Object.assign(respond, {
+                            success: true,
+                            data: result,
+                            messages: '修改成功',
+                        }))
+                    }else{
+                        res.json(Object.assign(respond, {
+                            data: err,
+                            messages: '修改失败 ',
+                        }))
+                    }
+                });
+            }else{
+                res.json(Object.assign(respond, {
+                    data: results,
+                    messages: '工号或昵称不存在',
+                }))
+            }
+        }else{
+            res.json(Object.assign(respond, {
+                data: error,
+                messages: '取学生信息详情失败',
+            }))
+        }
+    });
+
+})
+
 
 module.exports = router

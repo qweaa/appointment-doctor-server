@@ -79,6 +79,7 @@ const order = require('./action/order')
 const upload = require('./action/upload')
 const comment = require('./action/comment')
 const time = require('./action/time')
+const admin = require('./action/admin')
 
 
 app.use('/student',student)
@@ -91,6 +92,7 @@ app.use('/order',order)
 app.use('/upload',upload)
 app.use('/comment',comment)
 app.use('/time',time)
+app.use('/admin',admin)
 
 
 

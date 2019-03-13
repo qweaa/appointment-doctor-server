@@ -92,6 +92,34 @@ router.get('/getOrderListforDoctor', (req,res)=>{
     });
 
 })
+//管理员取订单列表
+router.get('/getOrderListforAdmin', (req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    let status = req.query.status || 0,
+        rows = req.query.rows || 10,
+        page = req.query.page || 1
+
+
+    conn.query(`SELECT * from orderview where status = ${status} AND deleted = 0 limit ${(page - 1) * rows} , ${page * rows}`, function (error, results, fields) {
+        if (!error){
+            for(let i of results){
+                i.doctor_avatar = server_address + i.doctor_avatar
+                i.student_avatar = server_address + i.student_avatar
+            }
+            res.json(Object.assign(respond, {
+                success: true,
+                data: results,
+                messages: '取订单列表成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: error,
+                messages: '取订单列表失败',
+            }))
+        }
+    });
+
+})
 
 //取消订单
 router.post('/cancelOrder',(req,res)=>{
@@ -328,5 +356,60 @@ router.post('/submitOrder', (req,res)=>{
     });
 
 })
+
+//更改订单状态
+router.post('/updateOrderStatus',(req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    // const studentID = req.headers.studentid
+    const data = req.query
+
+    if(!data.code){
+        res.json(Object.assign(respond, {
+            messages: '请传入订单号'
+        }))
+        return
+    }
+    if(!data.status){
+        res.json(Object.assign(respond, {
+            messages: '状态值不能为空'
+        }))
+        return
+    }
+
+    const aStatus = [
+        {
+            status: 0,
+            text: '待付款',
+        },{
+            status: 1,
+            text: '已失效'
+        },{
+            status: 2,
+            text: '已预约'
+        },{
+            status: 3,
+            text: '已完成'
+        },{
+            status: 4,
+            text: '已取消'
+        }
+    ]
+
+    conn.query('UPDATE `order` SET status = ' + data.status + ' , status_text = "'+ aStatus[data.status].text +'" WHERE code = ' + data.code,function (error, result) {
+        if (!error){
+            res.json(Object.assign(respond, {
+                success: true,
+                data: true,
+                messages: '操作成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: error,
+                messages: '操作失败',
+            }))
+        }
+    })
+})
+
 
 module.exports = router
