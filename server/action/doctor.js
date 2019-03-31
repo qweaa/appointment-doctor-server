@@ -162,7 +162,7 @@ router.post('/addDoctor',(req,res)=>{
     // const data = req.params
     const data = Object.assign({
         doctorID: '',
-        password: '',
+        // password: '',
         NickName: '',
         realName: '',
         age: '',
@@ -175,7 +175,7 @@ router.post('/addDoctor',(req,res)=>{
         status: 1,
     },req.query)
 
-    if(!data.password || !data.NickName || !data.realName || !data.doctorID){
+    if(!data.NickName || !data.realName || !data.doctorID){
         res.json(Object.assign(respond, {
             data: data,
             messages: '参数不能为空',

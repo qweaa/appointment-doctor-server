@@ -140,7 +140,7 @@ router.get('/getDoctorBookAllList', (req,res)=>{
                         if(i.week - 1 > -1){
                             r[i.week - 1].list.push(i)
                         }else{
-                            r[6].push(i)
+                            r[6].list.push(i)
                         }
                     }
 
