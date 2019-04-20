@@ -110,6 +110,8 @@ router.post('/updateStudentModule',(req,res)=>{
         return
     }
 
+    if(data.tokenid) delete data.tokenid
+
     //学生表所包含的键
     const studentTableKeys = ['studentID','password','realName','NickName','age','gender','avatarUrl','province','city','country','info', 'birthady', 'idcard']
 

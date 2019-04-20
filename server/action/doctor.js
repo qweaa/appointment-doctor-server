@@ -40,7 +40,7 @@ router.get('/getDoctorModule', (req,res)=>{
 //取推荐医师列表
 router.get('/getRecommentsList', (req,res)=>{
     const respond = JSON.parse(JSON.stringify(resp))
-    conn.query(`SELECT * from doctor where recommend = 1`, function (error, results, fields) {
+    conn.query(`SELECT * from doctor where recommend = 1 AND status = 1`, function (error, results, fields) {
         if (!error){
             for(let i of results){
                 i.avatarUrl = server_address + i.avatarUrl
@@ -59,10 +59,33 @@ router.get('/getRecommentsList', (req,res)=>{
     });
 })
 
+
+//取所有医师列表
+router.get('/getAllDoctorList', (req,res)=>{
+    const respond = JSON.parse(JSON.stringify(resp))
+    conn.query(`SELECT * from doctor`, function (error, results, fields) {
+        if (!error){
+            for(let i of results){
+                i.avatarUrl = server_address + i.avatarUrl
+            }
+            res.json(Object.assign(respond, {
+                success: true,
+                data: results,
+                messages: '取医师列表成功',
+            }))
+        }else{
+            res.json(Object.assign(respond, {
+                data: error,
+                messages: '取医师列表失败',
+            }))
+        }
+    });
+})
+
 //取所有医师列表
 router.get('/getDoctorList', (req,res)=>{
     const respond = JSON.parse(JSON.stringify(resp))
-    conn.query(`SELECT * from doctor`, function (error, results, fields) {
+    conn.query(`SELECT * from doctor where status = 1`, function (error, results, fields) {
         if (!error){
             for(let i of results){
                 i.avatarUrl = server_address + i.avatarUrl

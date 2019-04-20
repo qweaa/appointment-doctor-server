@@ -11,8 +11,19 @@ const formidable = require('formidable')
 router.post('/image', function (req, res, next) {
     const respond = JSON.parse(JSON.stringify(resp))
     var form = new formidable.IncomingForm()
+    console.log(1)
     form.uploadDir = path.normalize(__dirname + '/../upload/images/student') //------图片上传目录
+    console.log(2)
     form.parse(req, function (err, fields, files) {
+        console.log("files.file: ",files)
+        if(err){
+            console.log("处理图片失败",err)
+            res.json(Object.assign(respond, {
+                data: err,
+                messages: '上传图片失败',
+            }))
+            return
+        }
         var oldpath = files.file.path
         var newpath = path.normalize(__dirname + '/../upload/images/student') + '\\' + req.headers.studentid + '.png'    //-------//给上传的图片重命名
         fs.rename(oldpath, newpath, function (err) {
